@@ -139,9 +139,15 @@ export async function sendConfirmationEmail(registrationData) {
   try {
     const info = await transporter.sendMail({
       from: `"${fromName}" <${fromAddress}>`,
+      replyTo: 'tirunelveli@time4education.com',
       to: email,
       bcc: bccAddress,
-      subject: `✅ Registration Confirmed — SIGARAM THODU | ${name}`,
+      subject: `Registration Confirmed - SIGARAM THODU | ${name}`,
+      headers: {
+        'X-Entity-Ref-ID': `sigaram-${Date.now()}`,
+        'List-Unsubscribe': `<mailto:tirunelveli@time4education.com?subject=unsubscribe>`,
+        'Precedence': 'bulk',
+      },
       text: [
         `Hello ${name},`,
         '',

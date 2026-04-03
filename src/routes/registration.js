@@ -35,7 +35,7 @@ const registrationValidators = [
     .trim()
     .notEmpty().withMessage('Email is required.')
     .isEmail().withMessage('Please enter a valid email address.')
-    .normalizeEmail()
+    .normalizeEmail({ gmail_remove_dots: false })
     .isLength({ max: 254 }).withMessage('Email is too long.'),
   body('standard')
     .trim()
