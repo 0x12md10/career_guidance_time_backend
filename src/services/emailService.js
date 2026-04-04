@@ -163,7 +163,7 @@ export async function sendConfirmationEmail(registrationData) {
         '',
         '— T.I.M.E Tirunelveli',
         '  +91 76039 12341 / +91 76039 12342',
-        '  tirunelveli@time4education.com',
+        '  timetirunelveli@gmail.com',
       ].join('\n'),
       html: buildHtml(registrationData),
     });

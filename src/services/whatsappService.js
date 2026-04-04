@@ -34,14 +34,14 @@ function formatPhone(phone) {
  * otherwise falls back to a plain text message (only valid within 24h window).
  */
 function buildPayload(to, data) {
-  const { name, standard, school, city } = data;
+  const { name } = data;
   const templateName = process.env.WHATSAPP_TEMPLATE_NAME;
   const templateLang = process.env.WHATSAPP_TEMPLATE_LANG || 'en_US';
 
   if (templateName) {
     // --- Template message (required for business-initiated messages) ---
-    // Your approved template should have parameters matching this order:
-    // {{1}} = name, {{2}} = standard, {{3}} = school, {{4}} = city
+    // Template body: "Hello *{{1}}*! Your registration is successful."
+    // {{1}} = name only
     return {
       messaging_product: 'whatsapp',
       to,
@@ -54,9 +54,6 @@ function buildPayload(to, data) {
             type: 'body',
             parameters: [
               { type: 'text', text: name },
-              { type: 'text', text: standard },
-              { type: 'text', text: school },
-              { type: 'text', text: city },
             ],
           },
         ],
@@ -71,8 +68,8 @@ function buildPayload(to, data) {
     `Hello *${name}*! Your registration is successful.`,
     '',
     `*Event Details:*`,
-    `📆 April 6, 2025 (Sunday)`,
-    `🕥 10:30 AM – 1:00 PM`,
+    `📆 April 26, 2025 (Sunday)`,
+    `🕥 9:00 AM – 1:00 PM`,
     `📍 T.I.M.E Institute, Tirunelveli`,
     `💰 Completely FREE`,
     '',

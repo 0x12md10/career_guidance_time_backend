@@ -18,7 +18,7 @@ if (!MONGODB_URI) {
   console.error('❌ MONGODB_URI is not set in environment variables');
   process.exit(1);
 }
-
+// checkpoint1
 // ─── Security headers ────────────────────────────────────────────────────────
 app.use(
   helmet({
