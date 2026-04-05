@@ -40,20 +40,22 @@ app.use(
 // ─── CORS ────────────────────────────────────────────────────────────────────
 const allowedOrigins = [
   FRONTEND_URL,
+  'https://sigaramthodu.timetirunelveli.com',
   'http://localhost:5173',
   'http://localhost:4173',
 ].filter(Boolean);
 
 app.use(
   cors({
-    origin: (origin, cb) => {
-      // Allow requests with no origin (curl, Postman, server-to-server)
-      if (!origin) return cb(null, true);
-      if (allowedOrigins.includes(origin)) return cb(null, true);
-      cb(new Error(`CORS: origin '${origin}' not allowed`));
-    },
+    origin : 'https://sigaramthodu.timetirunelveli.com',
+    // origin: (origin, cb) => {
+    //   // Allow requests with no origin (curl, Postman, server-to-server)
+    //   if (!origin) return cb(null, true);
+    //   if (allowedOrigins.includes(origin)) return cb(null, true);
+    //   cb(new Error(`CORS: origin '${origin}' not allowed`));
+    // },
     credentials: true,
-    methods: ['GET', 'POST', 'OPTIONS'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
   })
 );
