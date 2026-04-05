@@ -20,6 +20,8 @@ if (!MONGODB_URI) {
 }
 // checkpoint1
 // ─── Security headers ────────────────────────────────────────────────────────
+
+app.set('trust proxy', 1); // Add this line
 app.use(
   helmet({
     contentSecurityPolicy: {
