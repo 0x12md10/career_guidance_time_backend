@@ -42,7 +42,7 @@ app.use(
 const allowedOrigins = [
   FRONTEND_URL,
   'https://sigaramthodu.timetirunelveli.com',
-  'https://sigaram-checkin.netlify.app',
+  'https://sigaramattendance.netlify.app',
   'http://localhost:5173',
   'http://localhost:4173',
   'http://localhost:5174',
