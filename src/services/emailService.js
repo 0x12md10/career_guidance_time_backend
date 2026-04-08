@@ -1,15 +1,12 @@
-import { SESClient, SendRawEmailCommand } from '@aws-sdk/client-ses';
 import nodemailer from 'nodemailer';
 
 /**
- * AWS SES + Nodemailer email service.
+ * Gmail SMTP + Nodemailer email service.
  *
  * Required env vars:
- *   AWS_REGION            — e.g. ap-south-1
- *   AWS_ACCESS_KEY_ID     — IAM user access key
- *   AWS_SECRET_ACCESS_KEY — IAM user secret key
- *   SES_FROM_ADDRESS      — verified sender address in SES (e.g. noreply@yourdomain.com)
- *   SES_BCC_ADDRESS       — optional BCC (defaults to timetirunelveli@gmail.com)
+ *   GMAIL_USER         — your Gmail address (e.g. timetirunelveli@gmail.com)
+ *   GMAIL_APP_PASSWORD — 16-char App Password from myaccount.google.com/apppasswords
+ *   GMAIL_BCC          — optional BCC address (defaults to GMAIL_USER)
  */
 
 let _transporter = null;
@@ -17,27 +14,19 @@ let _transporter = null;
 function getTransporter() {
   if (_transporter) return _transporter;
 
-  const { AWS_REGION, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, SES_FROM_ADDRESS } = process.env;
+  const { GMAIL_USER, GMAIL_APP_PASSWORD } = process.env;
 
-  if (!AWS_REGION || !AWS_ACCESS_KEY_ID || !AWS_SECRET_ACCESS_KEY || !SES_FROM_ADDRESS) {
-    console.warn(
-      '⚠️  AWS SES not configured — missing one or more of: ' +
-      'AWS_REGION, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, SES_FROM_ADDRESS'
-    );
+  if (!GMAIL_USER || !GMAIL_APP_PASSWORD) {
+    console.warn('⚠️  Gmail not configured — missing GMAIL_USER or GMAIL_APP_PASSWORD');
     return null;
   }
 
-  const sesClient = new SESClient({
-    region: AWS_REGION,
-    credentials: {
-      accessKeyId: AWS_ACCESS_KEY_ID,
-      secretAccessKey: AWS_SECRET_ACCESS_KEY,
-    },
-  });
-
   _transporter = nodemailer.createTransport({
-    SES: { ses: sesClient, aws: { SendRawEmailCommand } },
-    sendingRate: 14, // SES default sandbox: 1/s; production: up to 14/s
+    service: 'gmail',
+    auth: {
+      user: GMAIL_USER,
+      pass: GMAIL_APP_PASSWORD,
+    },
   });
 
   return _transporter;
@@ -83,7 +72,7 @@ function buildHtml(data) {
       <p>Free Education Guidance Program — T.I.M.E Tirunelveli</p>
     </div>
     <div class="body">
-      <p class="greeting">Hello ${name}! 🎉</p>
+      <p class="greeting">Hello ${name}!</p>
       <p class="intro">
         Your registration for <strong>SIGARAM THODU</strong> is confirmed.
         We look forward to seeing you at this free education guidance program.
@@ -99,12 +88,12 @@ function buildHtml(data) {
       </div>
 
       <div class="event-box">
-        <h3>📅 Event Details</h3>
+        <h3>Event Details</h3>
         <div class="event-item"><span>📆</span> April 26, 2026 (Sunday)</div>
         <div class="event-item"><span>🕥</span> 9:00 AM – 1:00 PM</div>
         <div class="event-item"><span>📍</span> T.I.M.E Institute, Tirunelveli, Tamil Nadu</div>
         <div class="event-item"><span>💰</span> Completely FREE — No charges</div>
-        <div class="event-item"><span>🎁</span> Free handbooks worth ₹500 each for all attendees</div>
+        <div class="event-item"><span>🎁</span> Free handbooks worth Rs.500 each for all attendees</div>
       </div>
 
       <p class="note">
@@ -115,7 +104,7 @@ function buildHtml(data) {
       </p>
     </div>
     <div class="footer">
-      <p>T.I.M.E Institute, Tirunelveli • tirunelveli@time4education.com</p>
+      <p>T.I.M.E Institute, Tirunelveli • timetirunelveli@gmail.com</p>
       <p style="margin-top:6px;">© 2026 T.I.M.E Tirunelveli. All rights reserved.</p>
     </div>
   </div>
@@ -124,7 +113,7 @@ function buildHtml(data) {
 }
 
 /**
- * Send a registration confirmation email via AWS SES.
+ * Send a registration confirmation email via Gmail SMTP.
  * Never throws — logs errors gracefully so registration is never blocked.
  */
 export async function sendConfirmationEmail(registrationData) {
@@ -132,22 +121,15 @@ export async function sendConfirmationEmail(registrationData) {
   if (!transporter) return;
 
   const { name, email } = registrationData;
-  const fromAddress = process.env.SES_FROM_ADDRESS;
-  const fromName = 'SIGARAM THODU — T.I.M.E Tirunelveli';
-  const bccAddress = process.env.SES_BCC_ADDRESS || 'timetirunelveli@gmail.com';
+  const fromAddress = process.env.GMAIL_USER;
+  const bccAddress = process.env.GMAIL_BCC || fromAddress;
 
   try {
     const info = await transporter.sendMail({
-      from: `"${fromName}" <${fromAddress}>`,
-      replyTo: 'tirunelveli@time4education.com',
+      from: `"SIGARAM THODU - T.I.M.E Tirunelveli" <${fromAddress}>`,
       to: email,
       bcc: bccAddress,
       subject: `Registration Confirmed - SIGARAM THODU | ${name}`,
-      headers: {
-        'X-Entity-Ref-ID': `sigaram-${Date.now()}`,
-        'List-Unsubscribe': `<mailto:tirunelveli@time4education.com?subject=unsubscribe>`,
-        'Precedence': 'bulk',
-      },
       text: [
         `Hello ${name},`,
         '',
@@ -155,20 +137,20 @@ export async function sendConfirmationEmail(registrationData) {
         '',
         'Event Details:',
         '  Date   : April 26, 2026 (Sunday)',
-        '  Time   : 9:00 AM – 1:00 PM',
+        '  Time   : 9:00 AM - 1:00 PM',
         '  Venue  : T.I.M.E Institute, Tirunelveli',
         '  Entry  : Free',
         '',
         'Please arrive on time. Keep this email as your confirmation.',
         '',
-        '— T.I.M.E Tirunelveli',
+        '- T.I.M.E Tirunelveli',
         '  +91 76039 12341 / +91 76039 12342',
         '  timetirunelveli@gmail.com',
       ].join('\n'),
       html: buildHtml(registrationData),
     });
-    console.log(`📧 Email sent via SES to ${email} (MessageId: ${info.messageId})`);
+    console.log(`📧 Email sent via Gmail to ${email} (MessageId: ${info.messageId})`);
   } catch (err) {
-    console.error('❌ SES email failed:', err.message);
+    console.error('❌ Gmail email failed:', err.message);
   }
 }
