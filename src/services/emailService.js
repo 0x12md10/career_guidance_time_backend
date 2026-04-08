@@ -1,4 +1,5 @@
 import nodemailer from 'nodemailer';
+import QRCode from 'qrcode';
 
 /**
  * Gmail SMTP + Nodemailer email service.
@@ -32,7 +33,7 @@ function getTransporter() {
   return _transporter;
 }
 
-function buildHtml(data) {
+function buildHtml(data, qrDataUrl) {
   const { name, phone, email, standard, school, city } = data;
   return `<!DOCTYPE html>
 <html lang="en">
@@ -96,6 +97,11 @@ function buildHtml(data) {
         <div class="event-item"><span>🎁</span> Free handbooks worth Rs.500 each for all attendees</div>
       </div>
 
+      <div style="text-align:center; margin-bottom:24px;">
+        <p style="font-size:13px; color:#9ca3af; margin:0 0 12px;">Your entry pass — show this QR at the venue</p>
+        <img src="cid:qrcode" alt="QR Code" width="180" height="180" style="border-radius:12px; border:4px solid #f97316; background:#fff; padding:8px;" />
+        <p style="font-size:11px; color:#6b7280; margin:8px 0 0;">உங்கள் நுழைவு QR குறியீடு</p>
+      </div>
       <p class="note">
         Please arrive on time. Seats are limited.<br />
         Keep this email as your entry confirmation.<br /><br />
@@ -120,9 +126,22 @@ export async function sendConfirmationEmail(registrationData) {
   const transporter = getTransporter();
   if (!transporter) return;
 
-  const { name, email } = registrationData;
+  const { name, email, qrToken } = registrationData;
   const fromAddress = process.env.GMAIL_USER;
   const bccAddress = process.env.GMAIL_BCC || fromAddress;
+
+  // Generate QR code as PNG buffer (encodes the unique token)
+  let qrBuffer = null;
+  try {
+    qrBuffer = await QRCode.toBuffer(qrToken, {
+      errorCorrectionLevel: 'H',
+      width: 300,
+      margin: 2,
+      color: { dark: '#000000', light: '#ffffff' },
+    });
+  } catch (qrErr) {
+    console.warn('⚠️  QR generation failed:', qrErr.message);
+  }
 
   try {
     const info = await transporter.sendMail({
@@ -141,13 +160,22 @@ export async function sendConfirmationEmail(registrationData) {
         '  Venue  : T.I.M.E Institute, Tirunelveli',
         '  Entry  : Free',
         '',
-        'Please arrive on time. Keep this email as your confirmation.',
+        'Please bring this email (or the QR code) to the event for check-in.',
         '',
         '- T.I.M.E Tirunelveli',
         '  +91 76039 12341 / +91 76039 12342',
         '  timetirunelveli@gmail.com',
       ].join('\n'),
       html: buildHtml(registrationData),
+      attachments: qrBuffer
+        ? [
+            {
+              filename: 'entry-qr.png',
+              content: qrBuffer,
+              cid: 'qrcode', // referenced as src="cid:qrcode" in HTML
+            },
+          ]
+        : [],
     });
     console.log(`📧 Email sent via Gmail to ${email} (MessageId: ${info.messageId})`);
   } catch (err) {

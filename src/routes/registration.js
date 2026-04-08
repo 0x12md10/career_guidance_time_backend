@@ -103,7 +103,7 @@ router.post(
       });
 
       // ── Send notifications asynchronously (don't block the response) ────────
-      const notifData = { name, phone, email, standard, school, city };
+      const notifData = { name, phone, email, standard, school, city, qrToken: registration.qrToken };
       Promise.allSettled([
         sendConfirmationEmail(notifData),
         sendWhatsAppConfirmation(notifData),

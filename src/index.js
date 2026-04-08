@@ -6,6 +6,7 @@ import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import registrationRoutes from './routes/registration.js';
 import adminRoutes from './routes/admin.js';
+import checkinRoutes from './routes/checkin.js';
 
 dotenv.config();
 
@@ -41,8 +42,10 @@ app.use(
 const allowedOrigins = [
   FRONTEND_URL,
   'https://sigaramthodu.timetirunelveli.com',
+  'https://sigaram-checkin.netlify.app',
   'http://localhost:5173',
   'http://localhost:4173',
+  'http://localhost:5174',
 ].filter(Boolean);
 
 app.use(
@@ -84,6 +87,7 @@ app.use((req, _res, next) => {
 // ─── Routes ───────────────────────────────────────────────────────────────────
 app.use('/api/register', registrationRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/checkin', checkinRoutes);
 
 // ─── Health check ─────────────────────────────────────────────────────────────
 app.get('/health', (_req, res) => {

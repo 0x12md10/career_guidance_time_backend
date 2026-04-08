@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { randomUUID } from 'crypto';
 
 const registrationSchema = new mongoose.Schema(
   {
@@ -47,6 +48,20 @@ const registrationSchema = new mongoose.Schema(
       type: String,
       enum: ['friend', 'social_media', 'school', 'family', 'other', ''],
       default: '',
+    },
+    // ─── Attendance ───────────────────────────────────────────────────────────
+    qrToken: {
+      type: String,
+      unique: true,
+      default: () => randomUUID(),
+    },
+    checkedIn: {
+      type: Boolean,
+      default: false,
+    },
+    checkedInAt: {
+      type: Date,
+      default: null,
     },
   },
   {

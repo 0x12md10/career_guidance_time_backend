@@ -101,6 +101,8 @@ router.get('/export', requireAdmin, async (req, res) => {
       'Parent Name': r.parentName || '',
       'Parent Phone': r.parentPhone || '',
       'How Heard': r.howHeard || '',
+      'Attended': r.checkedIn ? 'Yes' : 'No',
+      'Checked In At': r.checkedInAt ? new Date(r.checkedInAt).toLocaleString('en-IN') : '',
     }));
 
     const worksheet = xlsx.utils.json_to_sheet(rows);
